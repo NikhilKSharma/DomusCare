@@ -8,6 +8,7 @@ import 'package:flutter_app/features/auth/presentation/providers/auth_controller
 import 'package:flutter_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/signup_screen.dart';
+import 'package:flutter_app/features/customer/presentation/screens/customer_home_screen.dart';
 
 // --- MODIFIED HOME SCREEN WITH LOGOUT BUTTON ---
 class HomeScreen extends ConsumerWidget {
@@ -73,7 +74,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup/:role',
         builder: (c, s) => SignupScreen(role: s.pathParameters['role']!),
       ),
-      GoRoute(path: '/home', builder: (c, s) => const HomeScreen()),
+      // Inside your GoRouter routes list
+      GoRoute(
+        path: '/home',
+        // Replace the old HomeScreen with the new CustomerHomeScreen
+        builder: (context, state) => const CustomerHomeScreen(),
+      ),
     ],
   );
 });
