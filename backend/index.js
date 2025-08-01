@@ -1,12 +1,14 @@
 // backend/index.js
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose'; 
+import mongoose from 'mongoose';
 
+// Import Routers
 import authRouter from './src/api/routes/auth.routes.js';
-import serviceRouter from './src/api/routes/service.routes.js'; // <-- Verify this line exists
-import providerRouter from './src/api/routes/provider.routes.js';
+import serviceRouter from './src/api/routes/service.routes.js'; // <-- This line is new
+
 // Load environment variables
 dotenv.config();
 
@@ -14,15 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middlewares
-// Replace the simple app.use(cors()); with this:
 app.use(cors({
-  origin: '*', // Allow all origins
+  origin: '*',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true // Allow cookies to be sent
-})); // Enable Cross-Origin Resource Sharing
-
-
-app.use(express.json()); // Enable parsing of JSON bodies
+  credentials: true
+}));
+app.use(express.json());
 
 // --- Connect to MongoDB ---
 mongoose.connect(process.env.MONGODB_URI)
@@ -31,17 +30,15 @@ mongoose.connect(process.env.MONGODB_URI)
   })
   .catch((error) => {
     console.error("❌ MongoDB connection error:", error);
-    process.exit(1); // Exit process with failure
+    process.exit(1);
   });
 // -------------------------
 
 // --- API Routes ---
 const apiVersion = '/api/v1';
 app.use(`${apiVersion}/auth`, authRouter);
-app.use(`${apiVersion}/services`, serviceRouter); // <-- Verify this line exists
-app.use(`${apiVersion}/providers`, providerRouter);
+app.use(`${apiVersion}/services`, serviceRouter); // <-- This line is new
 // --------------------
-
 
 // A simple test route
 app.get('/', (req, res) => {
