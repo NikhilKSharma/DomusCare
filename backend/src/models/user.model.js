@@ -5,36 +5,34 @@ import jwt from 'jsonwebtoken';
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    // ... existing fields (name, email, phone, password, role)
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    phone: { type: String, required: true, unique: true, trim: true },
+    password: { type: String, required: [true, 'Password is required'] },
+    role: { type: String, enum: ['customer', 'provider'], default: 'customer', required: true },
+
+    // --- EXISTING PROVIDER FIELDS ---
+    profilePicture: { type: String, default: '' },
+    bio: { type: String, default: '' },
+    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
+    basePrice: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+
+    // --- NEWLY ADDED FIELDS ---
+    address: { // For customers
       type: String,
-      required: true,
-      trim: true,
+      default: '',
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
+    isAvailable: { // For providers to toggle their status
+      type: Boolean,
+      default: false,
     },
-    phone: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
+    completedJobs: { // For providers
+      type: Number,
+      default: 0,
     },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-    },
-    role: {
-      type: String,
-      enum: ['customer', 'provider'],
-      default: 'customer',
-      required: true,
-    },
-    // We can add provider-specific fields later
-    // e.g., profilePicture, services, averageRating
+    // --------------------------
   },
   { timestamps: true }
 );

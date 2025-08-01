@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose'; 
 
 import authRouter from './src/api/routes/auth.routes.js';
+import serviceRouter from './src/api/routes/service.routes.js'; // <-- Verify this line exists
+import providerRouter from './src/api/routes/provider.routes.js';
 // Load environment variables
 dotenv.config();
 
@@ -36,6 +38,8 @@ mongoose.connect(process.env.MONGODB_URI)
 // --- API Routes ---
 const apiVersion = '/api/v1';
 app.use(`${apiVersion}/auth`, authRouter);
+app.use(`${apiVersion}/services`, serviceRouter); // <-- Verify this line exists
+app.use(`${apiVersion}/providers`, providerRouter);
 // --------------------
 
 
