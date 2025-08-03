@@ -1,5 +1,5 @@
 // lib/routes/app_router.dart
-// --- CORRECTED AND SECURED VERSION ---
+// --- COMPLETE VERSION ---
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,62 +8,64 @@ import 'package:flutter_app/features/auth/presentation/providers/auth_controller
 import 'package:flutter_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/signup_screen.dart';
+import 'package:flutter_app/features/customer/models/provider_model.dart';
+import 'package:flutter_app/features/customer/presentation/screens/booking_screen.dart';
 import 'package:flutter_app/features/customer/presentation/screens/customer_home_screen.dart';
+import 'package:flutter_app/features/customer/presentation/screens/provider_list_screen.dart';
 
-// --- MODIFIED HOME SCREEN WITH LOGOUT BUTTON ---
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+// Placeholder for the provider dashboard screen we will build next
+class ProviderDashboardScreen extends ConsumerWidget {
+  const ProviderDashboardScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen for logout completion
-    ref.listen<AsyncValue<void>>(authControllerProvider, (previous, next) {
-      if (next is AsyncData && previous is AsyncLoading) {
-        context.go('/login');
-      }
-    });
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).logoutUser();
-            },
-          )
-        ],
-      ),
-      body: const Center(child: Text('Welcome! You are logged in.')),
-    );
+        appBar: AppBar(
+          title: const Text('Provider Dashboard'),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  ref.read(authControllerProvider.notifier).logoutUser();
+                },
+                icon: const Icon(Icons.logout))
+          ],
+        ),
+        body: const Center(child: Text('Provider Dashboard - Coming Soon!')));
   }
 }
-// ---------------------------------------------
 
-// Make the router a provider so it can read other providers
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: '/login', // Start at login
+    initialLocation: '/login',
+    // --- THIS REDIRECT LOGIC IS NOW ROLE-AWARE ---
     redirect: (BuildContext context, GoRouterState state) {
-      // Use authState to determine if user is logged in
-      final bool loggedIn = authState.asData?.value ?? false;
+      // The value of authState is the role string ('customer', 'provider') or null.
+      final String? role = authState.asData?.value;
+      final bool loggedIn = role != null;
+
       final bool onLoginPage = state.matchedLocation == '/login';
       final bool onSignupPage = state.matchedLocation.startsWith('/signup');
       final bool onRoleSelectPage = state.matchedLocation == '/select-role';
+      final bool onAuthFlowPage =
+          onLoginPage || onSignupPage || onRoleSelectPage;
 
-      // If not logged in and not on a public page, redirect to login
-      if (!loggedIn && !onLoginPage && !onSignupPage && !onRoleSelectPage) {
-        return '/login';
+      // If the user is logged in...
+      if (loggedIn) {
+        // ...and trying to access an auth page, redirect them to their dashboard.
+        if (onAuthFlowPage) {
+          return role == 'provider' ? '/provider/dashboard' : '/home';
+        }
+      }
+      // If the user is NOT logged in...
+      else {
+        // ...and trying to access any page that ISN'T an auth page, redirect to login.
+        if (!onAuthFlowPage) {
+          return '/login';
+        }
       }
 
-      // If logged in and on a public page, redirect to home
-      if (loggedIn && (onLoginPage || onSignupPage || onRoleSelectPage)) {
-        return '/home';
-      }
-
-      // No redirect needed
+      // In all other cases, no redirect is needed.
       return null;
     },
     routes: [
@@ -74,12 +76,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup/:role',
         builder: (c, s) => SignupScreen(role: s.pathParameters['role']!),
       ),
-      // Inside your GoRouter routes list
+      GoRoute(path: '/home', builder: (c, s) => const CustomerHomeScreen()),
       GoRoute(
-        path: '/home',
-        // Replace the old HomeScreen with the new CustomerHomeScreen
-        builder: (context, state) => const CustomerHomeScreen(),
+        path: '/providers',
+        builder: (context, state) {
+          final serviceId = state.uri.queryParameters['serviceId']!;
+          final serviceName = state.uri.queryParameters['serviceName']!;
+          return ProviderListScreen(
+            serviceId: serviceId,
+            serviceName: serviceName,
+          );
+        },
       ),
+      GoRoute(
+        path: '/booking',
+        builder: (context, state) {
+          final Map<String, dynamic> args = state.extra as Map<String, dynamic>;
+          final ProviderModel provider = args['provider'];
+          final String serviceId = args['serviceId'];
+          return BookingScreen(provider: provider, serviceId: serviceId);
+        },
+      ),
+      // --- NEW ROUTE for the provider dashboard ---
+      GoRoute(
+          path: '/provider/dashboard',
+          builder: (c, s) => const ProviderDashboardScreen()),
     ],
   );
 });

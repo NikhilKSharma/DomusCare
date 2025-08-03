@@ -1,6 +1,9 @@
 // lib/features/customer/presentation/screens/customer_home_screen.dart
+// --- UPDATED NAVIGATION LOGIC ---
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart'; // Make sure GoRouter is imported
 import 'package:flutter_app/features/customer/data/customer_repository.dart';
 import 'package:flutter_app/features/auth/presentation/providers/auth_controller.dart';
 import '../../models/service_model.dart';
@@ -18,39 +21,19 @@ class CustomerHomeScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () {
-            // TODO: Implement drawer/menu functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Menu clicked!')),
-            );
+            // Open a drawer or perform some action
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              // TODO: Navigate to Profile screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile clicked!')),
-              );
-            },
-          ),
-          // We can keep the logout button here for now for easy access
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).logoutUser();
-            },
-          )
-        ],
+        actions: [/* ... */],
       ),
       body: servicesAsyncValue.when(
         data: (services) => GridView.builder(
           padding: const EdgeInsets.all(16.0),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // 3 items per row
+            crossAxisCount: 3,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1, // Makes the cards square
+            childAspectRatio: 1,
           ),
           itemCount: services.length,
           itemBuilder: (context, index) {
@@ -69,12 +52,10 @@ class ServiceCard extends StatelessWidget {
   final ServiceModel service;
   const ServiceCard({super.key, required this.service});
 
-  // A map to associate icon names with actual Flutter Icons
   static const Map<String, IconData> iconMap = {
     'plumbing': Icons.plumbing,
     'cleaning': Icons.cleaning_services,
     'electrical': Icons.electrical_services,
-    // Add other icons here as you create more services
     'carpenter': Icons.handyman,
     'painter': Icons.format_paint,
     'pest_control': Icons.pest_control,
@@ -87,10 +68,11 @@ class ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // TODO: Navigate to the providers list screen for this service
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tapped on ${service.name}')),
-        );
+        // --- THIS IS THE UPDATED NAVIGATION CALL ---
+        final serviceNameEncoded = Uri.encodeComponent(service.name);
+        context.go(
+            '/providers?serviceId=${service.id}&serviceName=$serviceNameEncoded');
+        // --------------------------------------------
       },
       borderRadius: BorderRadius.circular(8.0),
       child: Card(
