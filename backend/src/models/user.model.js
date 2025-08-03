@@ -29,7 +29,7 @@ service: { // Provider's single service
     },
     isAvailable: { // For providers to toggle their status
       type: Boolean,
-      default: false,
+      default: true,
     },
     completedJobs: { // For providers
       type: Number,
