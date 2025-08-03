@@ -1,10 +1,10 @@
 // src/controllers/user.controller.js
+// --- CORRECTED VERSION ---
+
 import { User } from '../models/user.model.js';
 
 // Get the profile of the currently logged-in user
 const getMyProfile = async (req, res) => {
-    // The user object is attached to the request by our verifyJWT middleware
-    // We just need to send it back.
     return res.status(200).json({
         success: true,
         data: req.user
@@ -14,16 +14,18 @@ const getMyProfile = async (req, res) => {
 // Update the profile of the currently logged-in user
 const updateMyProfile = async (req, res) => {
     try {
-        const { name, phone, address, bio, basePrice } = req.body;
+        // --- FIX: Added 'service' to the destructuring ---
+        const { name, phone, address, bio, basePrice, service } = req.body;
         const userId = req.user._id;
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             {
-                $set: { name, phone, address, bio, basePrice }
+                // --- FIX: Added 'service' to the update object ---
+                $set: { name, phone, address, bio, basePrice, service }
             },
-            { new: true, runValidators: true } // Return the updated document
-        ).select('-password').populate('service'); // Exclude password and populate service
+            { new: true, runValidators: true }
+        ).select('-password').populate('service');
 
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
