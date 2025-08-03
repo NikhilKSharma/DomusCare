@@ -12,26 +12,9 @@ import 'package:flutter_app/features/customer/models/provider_model.dart';
 import 'package:flutter_app/features/customer/presentation/screens/booking_screen.dart';
 import 'package:flutter_app/features/customer/presentation/screens/customer_home_screen.dart';
 import 'package:flutter_app/features/customer/presentation/screens/provider_list_screen.dart';
+import 'package:flutter_app/features/provider/presentation/screens/provider_dashboard_screen.dart';
 
 // Placeholder for the provider dashboard screen we will build next
-class ProviderDashboardScreen extends ConsumerWidget {
-  const ProviderDashboardScreen({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Provider Dashboard'),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  ref.read(authControllerProvider.notifier).logoutUser();
-                },
-                icon: const Icon(Icons.logout))
-          ],
-        ),
-        body: const Center(child: Text('Provider Dashboard - Coming Soon!')));
-  }
-}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -98,9 +81,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       // --- NEW ROUTE for the provider dashboard ---
+      // Inside the GoRouter routes list in app_router.dart
       GoRoute(
-          path: '/provider/dashboard',
-          builder: (c, s) => const ProviderDashboardScreen()),
+        path: '/provider/dashboard',
+        // Replace the placeholder with the real dashboard screen
+        builder: (c, s) => const ProviderDashboardScreen(),
+      ),
     ],
   );
 });

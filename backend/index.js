@@ -8,10 +8,9 @@ import mongoose from 'mongoose';
 // Import Routers
 import authRouter from './src/api/routes/auth.routes.js';
 import serviceRouter from './src/api/routes/service.routes.js';
-import providerRouter from './src/api/routes/provider.routes.js'; // <-- This line is new
-import serviceRouter from './src/api/routes/service.routes.js';
 import providerRouter from './src/api/routes/provider.routes.js';
 import bookingRouter from './src/api/routes/booking.routes.js';
+import reviewRouter from './src/api/routes/review.routes.js'; // <-- This line is new
 
 // Load environment variables
 dotenv.config();
@@ -20,41 +19,24 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middlewares
-app.use(cors({
-  origin: '*',
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true
-}));
+app.use(cors({ origin: '*', methods: "GET,HEAD,PUT,PATCH,POST,DELETE", credentials: true }));
 app.use(express.json());
 
 // --- Connect to MongoDB ---
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected successfully!");
-  })
-  .catch((error) => {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1);
-  });
+  .then(() => { console.log("✅ MongoDB connected successfully!"); })
+  .catch((error) => { console.error("❌ MongoDB connection error:", error); process.exit(1); });
 // -------------------------
 
 // --- API Routes ---
 const apiVersion = '/api/v1';
 app.use(`${apiVersion}/auth`, authRouter);
 app.use(`${apiVersion}/services`, serviceRouter);
-app.use(`${apiVersion}/providers`, providerRouter); // <-- This line is new
-app.use(`${apiVersion}/auth`, authRouter);
-app.use(`${apiVersion}/services`, serviceRouter);
 app.use(`${apiVersion}/providers`, providerRouter);
 app.use(`${apiVersion}/bookings`, bookingRouter);
+app.use(`${apiVersion}/reviews`, reviewRouter); // <-- This line is new
 // --------------------
 
-// A simple test route
-app.get('/', (req, res) => {
-  res.send('DomusCare API is running! 🚀');
-});
+app.get('/', (req, res) => { res.send('DomusCare API is running! 🚀'); });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
