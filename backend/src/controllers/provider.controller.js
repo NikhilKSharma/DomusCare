@@ -13,7 +13,7 @@ const getProvidersByService = async (req, res) => {
     // Then, sort them by their average rating in descending order.
     const providers = await User.find({
       role: 'provider',
-      services: serviceId,
+      service: serviceId,
       isAvailable: true,
     })
     .sort({ averageRating: -1 })

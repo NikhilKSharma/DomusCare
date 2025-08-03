@@ -23,7 +23,7 @@ const updateMyProfile = async (req, res) => {
                 $set: { name, phone, address, bio, basePrice }
             },
             { new: true, runValidators: true } // Return the updated document
-        ).select('-password');
+        ).select('-password').populate('service'); // Exclude password and populate service
 
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });

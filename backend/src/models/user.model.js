@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema(
     // --- EXISTING PROVIDER FIELDS ---
     profilePicture: { type: String, default: '' },
     bio: { type: String, default: '' },
-    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
+service: { // Provider's single service
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service',
+},
     basePrice: { type: Number, default: 0 },
     averageRating: { type: Number, default: 0 },
 

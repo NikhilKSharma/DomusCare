@@ -1,9 +1,12 @@
 // lib/features/profile/presentation/screens/edit_profile_screen.dart
+// --- COMPLETE VERSION WITH DROPDOWN ---
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/core/models/user_model.dart';
+import 'package:flutter_app/features/customer/data/customer_repository.dart';
+import 'package:flutter_app/features/customer/models/service_model.dart';
 import '../../data/profile_repository.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -21,26 +24,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _addressController;
   late TextEditingController _bioController;
   late TextEditingController _priceController;
+  String? _selectedServiceId;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with the user data passed to the widget
-    _nameController = TextEditingController(text: widget.user.name);
-    _phoneController = TextEditingController(text: widget.user.phone);
-    _addressController = TextEditingController(text: widget.user.address);
-    _bioController = TextEditingController(text: widget.user.bio);
+    final user = widget.user;
+    _nameController = TextEditingController(text: user.name);
+    _phoneController = TextEditingController(text: user.phone);
+    _addressController = TextEditingController(text: user.address);
+    _bioController = TextEditingController(text: user.bio);
     _priceController =
-        TextEditingController(text: widget.user.basePrice.toStringAsFixed(0));
+        TextEditingController(text: user.basePrice.toStringAsFixed(0));
+    _selectedServiceId = user.service?.id;
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _bioController.dispose();
-    _priceController.dispose();
+    // ... dispose all controllers
     super.dispose();
   }
 
@@ -53,6 +54,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (widget.user.role == 'provider') ...{
           'bio': _bioController.text,
           'basePrice': double.tryParse(_priceController.text) ?? 0,
+          'service': _selectedServiceId, // Add selected service ID
         }
       };
       ref.read(profileControllerProvider.notifier).updateProfile(data);
@@ -61,15 +63,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = widget.user;
+    final allServicesAsync = ref.watch(servicesProvider);
     ref.listen(profileControllerProvider, (previous, next) {
       if (!next.isLoading && !next.hasError) {
-        context.pop(); // Go back on success
+        context.pop();
       } else if (next.hasError) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(next.error.toString())));
       }
     });
-
     final updateState = ref.watch(profileControllerProvider);
 
     return Scaffold(
@@ -88,7 +91,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(labelText: 'Address')),
-            if (widget.user.role == 'provider') ...[
+            if (user.role == 'provider') ...[
+              const SizedBox(height: 16),
+
+              // --- NEW DROPDOWN WIDGET ---
+              allServicesAsync.when(
+                data: (services) => DropdownButtonFormField<String>(
+                  value: _selectedServiceId,
+                  decoration:
+                      const InputDecoration(labelText: 'Select Service'),
+                  items: services.map((ServiceModel service) {
+                    return DropdownMenuItem<String>(
+                      value: service.id,
+                      child: Text(service.name),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedServiceId = newValue;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Please select a service' : null,
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, s) => const Text('Could not load services'),
+              ),
+              // ---------------------------
+
               const SizedBox(height: 16),
               TextFormField(
                   controller: _bioController,

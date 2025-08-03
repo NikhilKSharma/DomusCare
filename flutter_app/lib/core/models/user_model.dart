@@ -1,5 +1,12 @@
 // lib/core/models/user_model.dart
 
+// A simple representation of a service when it's part of another model
+class UserService {
+  final String id;
+  final String name;
+  UserService({required this.id, required this.name});
+}
+
 class UserModel {
   final String id;
   final String name;
@@ -9,6 +16,8 @@ class UserModel {
   final String address;
   final String bio;
   final double basePrice;
+  final UserService?
+      service; // <-- CHANGED from a list to a single nullable object
 
   UserModel({
     required this.id,
@@ -19,6 +28,7 @@ class UserModel {
     required this.address,
     required this.bio,
     required this.basePrice,
+    this.service, // <-- CHANGED
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +41,11 @@ class UserModel {
       address: json['address'] ?? '',
       bio: json['bio'] ?? '',
       basePrice: (json['basePrice'] as num? ?? 0).toDouble(),
+      // Check if service data exists before trying to parse it
+      service: json['service'] != null
+          ? UserService(
+              id: json['service']['_id'], name: json['service']['name'])
+          : null, // <-- CHANGED
     );
   }
 }
