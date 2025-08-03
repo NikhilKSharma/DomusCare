@@ -1,9 +1,9 @@
 // lib/features/customer/presentation/screens/provider_list_screen.dart
-// --- COMPLETE AND UPDATED VERSION ---
+// --- COMPLETE VERSION ---
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart'; // <-- ADDED for navigation
+import 'package:go_router/go_router.dart';
 import 'package:flutter_app/features/customer/data/customer_repository.dart';
 import '../../models/provider_model.dart';
 
@@ -37,7 +37,6 @@ class ProviderListScreen extends ConsumerWidget {
             itemCount: providers.length,
             itemBuilder: (context, index) {
               final provider = providers[index];
-              // --- CHANGED: Pass serviceId to the card ---
               return ProviderCard(provider: provider, serviceId: serviceId);
             },
           );
@@ -51,11 +50,11 @@ class ProviderListScreen extends ConsumerWidget {
 
 class ProviderCard extends StatelessWidget {
   final ProviderModel provider;
-  final String serviceId; // <-- ADDED to accept serviceId
+  final String serviceId;
   const ProviderCard({
     super.key,
     required this.provider,
-    required this.serviceId, // <-- ADDED to constructor
+    required this.serviceId,
   });
 
   @override
@@ -65,7 +64,6 @@ class ProviderCard extends StatelessWidget {
       elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
-          // You can use a placeholder or provider.profilePicture later
           child: Text(provider.name[0]),
         ),
         title: Text(provider.name,
@@ -75,7 +73,7 @@ class ProviderCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.star, color: Colors.amber, size: 16),
+                const Icon(Icons.star, color: Colors.amber, size: 16),
                 const SizedBox(width: 4),
                 Text(provider.averageRating.toStringAsFixed(1)),
                 const SizedBox(width: 8),
@@ -87,10 +85,9 @@ class ProviderCard extends StatelessWidget {
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
-        // --- CHANGED: onTap now navigates to the booking screen ---
         onTap: () {
           context.go(
-            '/booking',
+            '/provider-details',
             extra: {'provider': provider, 'serviceId': serviceId},
           );
         },

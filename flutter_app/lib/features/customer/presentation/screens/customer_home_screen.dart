@@ -1,9 +1,9 @@
 // lib/features/customer/presentation/screens/customer_home_screen.dart
-// --- UPDATED NAVIGATION LOGIC ---
+// --- COMPLETE VERSION ---
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart'; // Make sure GoRouter is imported
+import 'package:go_router/go_router.dart';
 import 'package:flutter_app/features/customer/data/customer_repository.dart';
 import 'package:flutter_app/features/auth/presentation/providers/auth_controller.dart';
 import '../../models/service_model.dart';
@@ -18,13 +18,39 @@ class CustomerHomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('DomusCare'),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Open a drawer or perform some action
-          },
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            // --- THIS IS UPDATED ---
+            onPressed: () => context.go('/profile'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              ref.read(authControllerProvider.notifier).logoutUser();
+            },
+          )
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: const Text('Menu',
+                  style: TextStyle(color: Colors.white, fontSize: 24)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('My Bookings'),
+              onTap: () {
+                Navigator.of(context).pop();
+                context.go('/my-bookings');
+              },
+            ),
+          ],
         ),
-        actions: [/* ... */],
       ),
       body: servicesAsyncValue.when(
         data: (services) => GridView.builder(
@@ -68,11 +94,9 @@ class ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // --- THIS IS THE UPDATED NAVIGATION CALL ---
         final serviceNameEncoded = Uri.encodeComponent(service.name);
         context.go(
             '/providers?serviceId=${service.id}&serviceName=$serviceNameEncoded');
-        // --------------------------------------------
       },
       borderRadius: BorderRadius.circular(8.0),
       child: Card(

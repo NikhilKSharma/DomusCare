@@ -4,26 +4,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_app/core/models/user_model.dart';
 import 'package:flutter_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:flutter_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:flutter_app/features/auth/presentation/screens/signup_screen.dart';
 import 'package:flutter_app/features/customer/models/provider_model.dart';
 import 'package:flutter_app/features/customer/presentation/screens/booking_screen.dart';
+import 'package:flutter_app/features/customer/presentation/screens/customer_bookings_screen.dart';
 import 'package:flutter_app/features/customer/presentation/screens/customer_home_screen.dart';
+import 'package:flutter_app/features/customer/presentation/screens/provider_details_screen.dart';
 import 'package:flutter_app/features/customer/presentation/screens/provider_list_screen.dart';
 import 'package:flutter_app/features/provider/presentation/screens/provider_dashboard_screen.dart';
-
-// Placeholder for the provider dashboard screen we will build next
+import 'package:flutter_app/features/profile/presentation/screens/profile_screen.dart';
+import 'package:flutter_app/features/profile/presentation/screens/edit_profile_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/login',
-    // --- THIS REDIRECT LOGIC IS NOW ROLE-AWARE ---
     redirect: (BuildContext context, GoRouterState state) {
-      // The value of authState is the role string ('customer', 'provider') or null.
       final String? role = authState.asData?.value;
       final bool loggedIn = role != null;
 
@@ -33,22 +34,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       final bool onAuthFlowPage =
           onLoginPage || onSignupPage || onRoleSelectPage;
 
-      // If the user is logged in...
       if (loggedIn) {
-        // ...and trying to access an auth page, redirect them to their dashboard.
         if (onAuthFlowPage) {
           return role == 'provider' ? '/provider/dashboard' : '/home';
         }
-      }
-      // If the user is NOT logged in...
-      else {
-        // ...and trying to access any page that ISN'T an auth page, redirect to login.
+      } else {
         if (!onAuthFlowPage) {
           return '/login';
         }
       }
-
-      // In all other cases, no redirect is needed.
       return null;
     },
     routes: [
@@ -80,12 +74,37 @@ final routerProvider = Provider<GoRouter>((ref) {
           return BookingScreen(provider: provider, serviceId: serviceId);
         },
       ),
-      // --- NEW ROUTE for the provider dashboard ---
-      // Inside the GoRouter routes list in app_router.dart
       GoRoute(
-        path: '/provider/dashboard',
-        // Replace the placeholder with the real dashboard screen
-        builder: (c, s) => const ProviderDashboardScreen(),
+          path: '/provider/dashboard',
+          builder: (c, s) => const ProviderDashboardScreen()),
+      GoRoute(
+        path: '/provider-details',
+        builder: (context, state) {
+          final Map<String, dynamic> args = state.extra as Map<String, dynamic>;
+          final ProviderModel provider = args['provider'];
+          final String serviceId = args['serviceId'];
+          return ProviderDetailsScreen(
+              provider: provider, serviceId: serviceId);
+        },
+      ),
+      GoRoute(
+        path: '/my-bookings',
+        builder: (context, state) => const CustomerBookingsScreen(),
+      ),
+
+      // --- NEW ROUTES FOR PROFILE ---
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'edit',
+            builder: (context, state) {
+              final UserModel user = state.extra as UserModel;
+              return EditProfileScreen(user: user);
+            },
+          ),
+        ],
       ),
     ],
   );

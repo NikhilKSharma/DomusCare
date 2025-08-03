@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_app/core/api/api_client.dart';
 import '../models/service_model.dart';
 import '../models/provider_model.dart';
+import '../models/review_model.dart';
+import '../models/customer_booking_model.dart';
 
 class CustomerRepository {
   final http.Client _client;
@@ -23,6 +25,56 @@ class CustomerRepository {
       return data.map((service) => ServiceModel.fromJson(service)).toList();
     } else {
       throw Exception('Failed to load services');
+    }
+  }
+
+  Future<List<CustomerBookingModel>> getMyBookings() async {
+    final headers = await _getAuthHeaders();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/bookings'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['data'] as List;
+      return data.map((b) => CustomerBookingModel.fromJson(b)).toList();
+    } else {
+      throw Exception('Failed to load your bookings');
+    }
+  }
+
+  Future<void> submitReview({
+    required String bookingId,
+    required int rating,
+    required String comment,
+  }) async {
+    final headers = await _getAuthHeaders();
+    final body = jsonEncode({
+      'bookingId': bookingId,
+      'rating': rating,
+      'comment': comment,
+    });
+    final response = await _client.post(
+      Uri.parse('$baseUrl/reviews'),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode != 201) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to submit review');
+    }
+  }
+
+  Future<List<ReviewModel>> fetchReviewsForProvider(String providerId) async {
+    final response =
+        await _client.get(Uri.parse('$baseUrl/reviews/provider/$providerId'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['data'] as List;
+      return data.map((review) => ReviewModel.fromJson(review)).toList();
+    } else {
+      throw Exception('Failed to load reviews');
     }
   }
 
@@ -95,4 +147,15 @@ final customerRepositoryProvider = Provider<CustomerRepository>((ref) {
     ref.watch(httpClientProvider),
     ref.watch(storageServiceProvider),
   );
+});
+final reviewsForProvider =
+    FutureProvider.family<List<ReviewModel>, String>((ref, providerId) {
+  return ref
+      .watch(customerRepositoryProvider)
+      .fetchReviewsForProvider(providerId);
+});
+
+final customerBookingsProvider =
+    FutureProvider<List<CustomerBookingModel>>((ref) {
+  return ref.watch(customerRepositoryProvider).getMyBookings();
 });

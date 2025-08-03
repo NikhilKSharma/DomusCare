@@ -1,8 +1,9 @@
 // lib/features/provider/presentation/screens/provider_dashboard_screen.dart
-// --- UPDATED VERSION ---
+// --- COMPLETE VERSION ---
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:flutter_app/features/provider/data/provider_repository.dart';
 import 'package:flutter_app/features/provider/models/provider_booking_model.dart';
@@ -22,6 +23,11 @@ class ProviderDashboardScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('My Dashboard'),
           actions: [
+            // --- ADDED PROFILE BUTTON ---
+            IconButton(
+              icon: const Icon(Icons.person_outline),
+              onPressed: () => context.go('/profile'),
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () =>
@@ -104,8 +110,6 @@ class BookingRequestCard extends ConsumerWidget {
                 .format(booking.bookingTime.toLocal())),
             Text(booking.address),
             const SizedBox(height: 8),
-
-            // --- THIS LOGIC IS UPDATED ---
             if (booking.status == 'Pending')
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -144,7 +148,6 @@ class BookingRequestCard extends ConsumerWidget {
                   child: const Text('MARK AS COMPLETE'),
                 ),
               ),
-            // -----------------------------
           ],
         ),
       ),
